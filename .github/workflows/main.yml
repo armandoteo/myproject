@@ -1,0 +1,37 @@
+name: Build RPA Selenium EXE
+
+# Se ejecuta al hacer push a "main" o manualmente desde la pestaña Actions
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout del código
+      uses: actions/checkout@v4
+
+    - name: Configurar Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11' # Asegúrate de que coincida con tu versión local
+
+    - name: Instalar dependencias
+      run: |
+        python -m pip install --upgrade pip
+        pip install pyinstaller
+        # Instala requirements.txt si existe
+        if (Test-Path requirements.txt) { pip install -r requirements.txt }
+
+    - name: Compilar con PyInstaller (Selenium Manager incluido)
+      # Cambia "main.py" por el nombre real de tu script si se llama distinto
+      run: pyinstaller --noconfirm --onefile --windowed --collect-all selenium Carga_SAT.py
+
+    - name: Subir artefacto (EXE listo para descargar)
+      uses: actions/upload-artifact@v4
+      with:
+        name: RPA-Bot-EXE
+        path: dist/*.exe
